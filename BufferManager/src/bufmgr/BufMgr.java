@@ -4,16 +4,24 @@ import global.PageId;
 import global.Page;
 
 public class BufMgr {
-/**
-* Create the BufMgr object.
-* Allocate pages (frames) for the buffer pool in main memory and
-* make the buffer manage aware that the replacement policy is* specified by replacerArg (e.g., LH, Clock, LRU, MRU, LIRS, etc.).
-*
-* @param​numbufs number of buffers in the buffer pool
-* @param​lookAheadSize number of pages to be looked ahead
-* @param​replacementPolicy Name of the replacement policy
-*/
-public BufMgr(int numbufs, int lookAheadSize, String replacementPolicy) {}
+
+	int numbufs;
+	Page[] bufferPool;
+	String replacementPolicy;
+	/**
+	* Create the BufMgr object.
+	* Allocate pages (frames) for the buffer pool in main memory and
+	* make the buffer manage aware that the replacement policy is* specified by replacerArg (e.g., LH, Clock, LRU, MRU, LIRS, etc.).
+	*
+	* @param​numbufs number of buffers in the buffer pool
+	* @param​lookAheadSize number of pages to be looked ahead
+	* @param​replacementPolicy Name of the replacement policy
+	*/
+	public BufMgr(int numbufs, int lookAheadSize, String replacementPolicy) {
+		this.numbufs = numbufs;
+		bufferPool = new Page[numbufs];
+		this.replacementPolicy = replacementPolicy;
+	}
 /**
 * Pin a page.
 * First check if this page is already in the buffer pool.
