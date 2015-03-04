@@ -6,6 +6,7 @@ package bufmgr;
 
 import global.PageId;
 import global.Page;
+import global.Minibase;
 import diskmgr.*;
 
 import java.io.IOException;
@@ -86,24 +87,44 @@ public class BufMgr {
 * @param dirty the dirty bit of the frame
 */
 public void unpinPage(PageId pageno, boolean dirty) throws ChainException {}
-/**
-* Allocate new pages.* Call DB object to allocate a run of new pages and
-* find a frame in the buffer pool for the first page
-* and pin it. (This call allows a client of the Buffer Manager
-* to allocate pages on disk.) If buffer is full, i.e., you
-* can't find a frame for the first page, ask DB to deallocate
-* all these pages, and return null.
-*
-* @param firstpage the address of the first page.
-* @param howmany total number of allocated new pages.
-*
-* @return the first page id of the new pages.__ null, if error.
-*/
-public PageId newPage(Page firstpage, int howmany)  throws IOException, ChainException{
-	PageId pid = new PageId();
-	diskManager.allocate_page(pid, howmany);
-	return pid;
-}
+	
+	
+	/**
+	* Allocate new pages.* Call DB object to allocate a run of new pages and
+	* find a frame in the buffer pool for the first page
+	* and pin it. (This call allows a client of the Buffer Manager
+	* to allocate pages on disk.) If buffer is full, i.e., you
+	* can't find a frame for the first page, ask DB to deallocate
+	* all these pages, and return null.
+	*
+	* @param firstpage the address of the first page.
+	* @param howmany total number of allocated new pages.
+	*
+	* @return the first page id of the new pages.__ null, if error.
+	*/
+	public PageId newPage(Page firstpage, int howmany)  throws IOException, ChainException{
+		PageId pid = new PageId();
+	
+		//Allocate new pages
+		try {
+			Minibase.DiskManager.allocate_page(pid, howmany);
+		}catch(Exception e) {
+			return null;
+		}
+	
+		//Allocate sucessfully, pin it
+		try {
+			pinPage(pid, firstpage, true);
+			return pid;
+		}catch(Exception e) {
+			//pinpage error, deallocate page
+			Minibase.DiskManager.deallocate_page(pid, howmany);
+			return null;
+		}
+
+	}
+	
+	
 /**
 * This method should be called to delete a page that is on disk.
 * This routine must call the method in diskmgr package to
