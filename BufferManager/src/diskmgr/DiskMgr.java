@@ -309,6 +309,9 @@ public class DiskMgr implements GlobalConst {
     int current_run_start = 0; 
     int current_run_length = 0;
     
+	/*System.out.println("allocate_page()");
+	System.out.println("run_size: " + run_size + "\n");
+	System.out.println("num_map_pages: " + num_map_pages + "\n");*/
     
     // This loop goes over each page in the space map.
     PageId pgid = new PageId();
@@ -316,7 +319,7 @@ public class DiskMgr implements GlobalConst {
     int byteptr;
     
     for(int i=0; i< num_map_pages; ++i) {// start forloop01
-	
+		//System.out.println("num_map_pages: " + i + "\n");
       pgid.pid = 1 + i;
       // Pin the space-map page.
       
