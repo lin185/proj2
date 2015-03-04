@@ -14,9 +14,29 @@ public class CustomHashTable {
 		ht = new ArrayList<ArrayList<Tuple>>();
 		
 	}
-	public Tuple get (PageId key){
-		return null;
+	/* get index number for where target tuple is stored
+	** Return -1 if tuple not found
+	*/
+	public int  getTupleIndex(PageId target, ArrayList<Tuple> bucketList){
+		int targetIndex = 0;
+		for(Tuple t: bucketList){
+			if(t.getPageId() == target){
+				break;			
+			}		
+			targetIndex++;
+		}
+		return targetIndex > bucketList.size() ? -1 : targetIndex;
 	}
+	/* get the target Tuple
+	** Return NULL if tuple not found
+	*/
+	public Tuple get (PageId pageId){
+		//Find the right bucketList		
+		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
+		int index = getTupleIndex(pageId, bucketList);
+		return  index == -1 ? null : bucketList.get(index);
+	}
+	/* put new tuple into the correct bucket */
 	public void put (PageId pageId, Integer frameId){
 		//If this is the first item in the bucket
 		if(ht.get(hash(pageId)) == null){
@@ -28,9 +48,14 @@ public class CustomHashTable {
 		        ht.get(hash(pageId)).add(new Tuple(pageId, frameId));
 		}
 	}
-	public Tuple remove(Integer key){
-		return null;
+	/* remove the target tuple from the bucketList */
+	public Tuple remove(PageId pageId){
+		//Find the right bucketList		
+		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
+
+		return bucketList.remove(getTupleIndex(pageId, bucketList));
 	}
+	/* Calculate the index number for hashTable directory */
 	public Integer hash(PageId pageNum){
 		return (a * pageNum.pid + b) % HTSIZE; 
 	}
