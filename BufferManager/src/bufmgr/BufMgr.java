@@ -17,7 +17,7 @@ public class BufMgr {
 	byte[][] bufPool; 	//array of bytes to represent buffer pool
 	Descriptor[] bufDescr;	//buffer descriptors for frames
 	
-	
+	//CustomHashTable hashTable
 	
 	String replacementPolicy;
 	DiskMgr diskManager;
