@@ -63,7 +63,25 @@ public class BufMgr {
 	* @param page the pointer point to the page.
 	* @param emptyPage true (empty page) false (nonempty page)
 	*/
-	public void pinPage(PageId pageno, Page page, boolean emptyPage) throws  ChainException{
+	public void pinPage(PageId pageno, Page page, boolean emptyPage) throws  PagePinnedException, HashEntryNotFoundException, InvalidPageNumberException, FileIOException, IOException{
+		Tuple t;
+		//If page is already in the buffer
+		if((t = hashTable.get(pageno))  != null){
+			//find the frame number and increment pin_count			
+			 bufDescr[t.getFrameId()].pin_count++;
+		}
+		//If page is not in the buffer
+		else {
+			//choose a frame to replace.
+			int frameNum = 0;
+			//if old frame is dirty -> write out the old page
+			if(bufDescr[frameNum].dirtybit == true){
+				PageId pid = new PageId(frameNum);
+				Page p = new Page(bufPool[frameNum]);
+				diskManager.write_page(pid, p);			
+			}
+			//hold the page, pin it.
+		}
 		
 		
 	}
@@ -85,7 +103,15 @@ public class BufMgr {
 * @param pageno page number in the Minibase.
 * @param dirty the dirty bit of the frame
 */
-public void unpinPage(PageId pageno, boolean dirty) throws ChainException {}
+public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException {
+		Descriptor d = bufDescr[pageno.pid];
+		if(d.pin_count == 0)
+			throw new PageUnpinnedException(null, "BUFMGR:PAGE_NOT_PINNED.");
+		if(dirty){
+			d.dirtybit = true;	    
+		}
+    	d.pin_count--;		
+}
 /**
 * Allocate new pages.* Call DB object to allocate a run of new pages and
 * find a frame in the buffer pool for the first page
