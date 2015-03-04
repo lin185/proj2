@@ -1,3 +1,7 @@
+/*
+ * @author Binhao Lin, Chiahao Chen
+ */
+
 package bufmgr;
 
 import global.PageId;
@@ -9,11 +13,13 @@ import chainexception.ChainException;
 
 public class BufMgr {
 
-	int numbufs;
-	Page[] bufferPool;
+	int numbufs;		//number of buffers in the buffer pool
+	byte[][] bufPool; 	//array of bytes to represent buffer pool
+	Descriptor[] bufDescr;	//buffer descriptors for frames
+	
+	
+	
 	String replacementPolicy;
-
-
 	DiskMgr diskManager;
 	
 	/**
@@ -27,9 +33,11 @@ public class BufMgr {
 	*/
 	public BufMgr(int numbufs, int lookAheadSize, String replacementPolicy) {
 		this.numbufs = numbufs;
-		bufferPool = new Page[numbufs];
-		this.replacementPolicy = replacementPolicy;
+		bufDescr = new Descriptor[numbufs];
+		bufPool = new byte[numbufs][global.GlobalConst.PAGE_SIZE];
 		
+		
+		this.replacementPolicy = replacementPolicy;
 		diskManager = new DiskMgr();
 	}
 	
@@ -56,6 +64,8 @@ public class BufMgr {
 		
 		
 	}
+	
+	
 /**
 * Unpin a page specified by a pageId.
 * This method should be called with dirty==true if the client has
