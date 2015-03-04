@@ -17,7 +17,7 @@ public class BufMgr {
 	byte[][] bufPool; 	//array of bytes to represent buffer pool
 	Descriptor[] bufDescr;	//buffer descriptors for frames
 	
-	//CustomHashTable hashTable
+	CustomHashTable hashTable;
 	
 	String replacementPolicy;
 	DiskMgr diskManager;
@@ -33,9 +33,12 @@ public class BufMgr {
 	*/
 	public BufMgr(int numbufs, int lookAheadSize, String replacementPolicy) {
 		this.numbufs = numbufs;
-		bufDescr = new Descriptor[numbufs];
 		bufPool = new byte[numbufs][global.GlobalConst.PAGE_SIZE];
-		
+		bufDescr = new Descriptor[numbufs];
+		for(int i = 0; i<numbufs; i++) {
+			bufDescr[i] = new Descriptor();
+		}
+		hashTable = new CustomHashTable();
 		
 		this.replacementPolicy = replacementPolicy;
 		diskManager = new DiskMgr();
@@ -121,12 +124,26 @@ public void flushPage(PageId pageid) {}
 *
 */
 public void flushAllPages() {}
-/**
-* Returns the total number of buffer frames.
-*/
-public int getNumBuffers() {return 0;}
-/**
-* Returns the total number of unpinned buffer frames.
-*/
-public int getNumUnpinned() {return 0;}
+	
+	
+	/**
+	* Returns the total number of buffer frames.
+	*/
+	public int getNumBuffers() {
+		return numbufs;
+	}
+
+
+	/**
+	* Returns the total number of unpinned buffer frames.
+	*/
+	public int getNumUnpinned() {
+		int ct = 0;
+		for(int i=0; i<numbufs; i++) {
+			if(bufDescr[i].pin_count == 0)
+				ct++;
+		}
+		return ct;
+	}
+	
 }

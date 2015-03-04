@@ -8,7 +8,9 @@ public class Descriptor {
 	boolean dirtybit;
 	
 	public Descriptor(){
-		
+		pageno = null;
+		pin_count = 0;
+		dirtybit = false;
 	}
 
 }
