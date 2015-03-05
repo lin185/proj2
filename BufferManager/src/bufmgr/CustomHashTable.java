@@ -25,25 +25,31 @@ public class CustomHashTable {
 		//System.out.println(target.pid);
 		if(bucketList.isEmpty())
 			return -1;
-		for(Tuple t: bucketList){
-			//System.out.println("t.getPageID: " + t.getPageId());
+	/*	for(Tuple t: bucketList){
+			System.out.println("t.getPageId()" + t.getPageId().pid + "target" + target.pid);
 			if(t.getPageId() == target){
 				break;			
 			}		
 			targetIndex++;
 		}
-		
-		return targetIndex > bucketList.size() ? -1 : targetIndex;
+	*/
+		for(; targetIndex < bucketList.size(); targetIndex++){
+			if(bucketList.get(targetIndex).getPageId().pid == target.pid)
+				return targetIndex;
+		}
+		return -1;//targetIndex > bucketList.size() ? -1 : targetIndex;
 	}
 	/* get the target Tuple
 	** Return NULL if tuple not found
 	*/
 	public Tuple get (PageId pageId){
-		//Find the right bucketList	
+		//Find the right bucketList
 		if(pageId == null)
 			return null;
 		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
 		int index = getTupleIndex(pageId, bucketList);
+
+	//	System.out.println("get3 pageID " + pageId + "Tuple" + bucketList.get(index).getFrameId());
 		return  index == -1 ? null : bucketList.get(index);
 	}
 	/* put new tuple into the correct bucket */
