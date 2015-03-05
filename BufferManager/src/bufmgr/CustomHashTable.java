@@ -31,7 +31,8 @@ public class CustomHashTable {
 	** Return NULL if tuple not found
 	*/
 	public Tuple get (PageId pageId){
-		//Find the right bucketList		
+		//Find the right bucketList	
+			
 		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
 		int index = getTupleIndex(pageId, bucketList);
 		return  index == -1 ? null : bucketList.get(index);

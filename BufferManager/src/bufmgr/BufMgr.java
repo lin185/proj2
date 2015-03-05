@@ -65,7 +65,7 @@ public class BufMgr {
 	* @param emptyPage true (empty page) false (nonempty page)
 	*/
 	public void pinPage(PageId pageno, Page page, boolean emptyPage) throws  PagePinnedException, HashEntryNotFoundException, InvalidPageNumberException, FileIOException, IOException{
-		Tuple t;
+		/*Tuple t;
 		//If page is already in the buffer
 		if((t = hashTable.get(pageno))  != null){
 			//find the frame number and increment pin_count			
@@ -82,38 +82,51 @@ public class BufMgr {
 				diskManager.write_page(pid, p);			
 			}
 			//hold the page, pin it.
-		}
+		}*/
 		
 		
 	}
 	
 	
-/**
-* Unpin a page specified by a pageId.
-* This method should be called with dirty==true if the client has
-* modified the page.
-* If so, this call should set the dirty bit
-* for this frame.
-* Further, if pin_count>0, this method should
-* decrement it.
-*If pin_count=0 before this call, throw an exception
-* to report error.
-*(For testing purposes, we ask you to throw
-* an exception named PageUnpinnedException in case of error.)
-*
-* @param pageno page number in the Minibase.
-* @param dirty the dirty bit of the frame
-*/
+	/**
+	* Unpin a page specified by a pageId.
+	* This method should be called with dirty==true if the client has
+	* modified the page.
+	* If so, this call should set the dirty bit
+	* for this frame.
+	* Further, if pin_count>0, this method should
+	* decrement it.
+	*If pin_count=0 before this call, throw an exception
+	* to report error.
+	*(For testing purposes, we ask you to throw
+	* an exception named PageUnpinnedException in case of error.)
+	*
+	* @param pageno page number in the Minibase.
+	* @param dirty the dirty bit of the frame
+	*/
 
-public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException {
-		Descriptor d = bufDescr[pageno.pid];
-		if(d.pin_count == 0)
+	public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException {
+		/*System.out.printf("unpinPage\n");
+		System.out.printf("PageId: %d\n", pageno.pid);
+		int frameId = hashTable.get(pageno).getFrameId();
+		System.out.printf("frameId: %d\n",frameId);
+		Descriptor d = bufDescr[frameId];*/
+		bufDescr[0].pin_count ++;
+		Descriptor d = bufDescr[0];
+		System.out.printf("unpinPage\n");
+		System.out.printf("PageId: %d\n", pageno.pid);
+		System.out.printf("frameId: %d\n",0);
+		if(d.pin_count == 0) {
+			System.out.printf("BUFMGR:PAGE_NOT_PINNED.\n");
 			throw new PageUnpinnedException(null, "BUFMGR:PAGE_NOT_PINNED.");
+		}	
+		
 		if(dirty){
+			System.out.printf("BUFMGR:DIRTY\n");
 			d.dirtybit = true;	    
 		}
-    	d.pin_count--;		
-}
+	    d.pin_count--;	
+	}
 		
 	/**
 	* Allocate new pages.* Call DB object to allocate a run of new pages and
