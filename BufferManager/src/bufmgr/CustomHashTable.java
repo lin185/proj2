@@ -96,5 +96,22 @@ public class CustomHashTable {
 	public Integer hash(PageId pageNum){
 		return (a * pageNum.pid + b) % HTSIZE; 
 	}
+	
+	public void printHashTable() {
+		System.out.printf("--------HashTable---------\n");
+		for(int i = 0; i < HTSIZE; i++){
+			ArrayList<Tuple> bucketList = ht.get(i);
+			int bucket_size = bucketList.size();
+			if(bucket_size > 0 ) {
+				System.out.printf("%d: ", i);
+				for(int j = 0; j < bucket_size; j++) {
+					Tuple t = bucketList.get(j);
+					System.out.printf("<pid:%d, fid:%d> ->", t.getPageId().pid, t.getFrameId());
+				}
+				System.out.printf("\n");
+			}
+		}
+		System.out.printf("--------------------------\n\n");
+	}
 
 }

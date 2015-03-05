@@ -42,6 +42,33 @@ public class BufMgr {
 			bufDescr[i] = new Descriptor();
 		}
 		hashTable = new CustomHashTable();
+		
+		
+		//test hash table
+		/*hashTable.printHashTable();
+		PageId pid = new PageId(0); //<0,0>
+		hashTable.put(pid, 0);
+		hashTable.printHashTable();
+		
+		pid = new PageId(0);
+		try{
+			hashTable.remove(pid);
+		}catch(Exception e) {
+			System.out.println("remove error");
+		}
+		hashTable.printHashTable();
+		
+		pid = new PageId(1); //<1,0>
+		hashTable.put(pid, 0);
+		hashTable.printHashTable();
+		
+		pid = new PageId(0); //<0,1>
+		hashTable.put(pid, 1);
+		hashTable.printHashTable();*/
+		
+		
+		
+		
 		this.replacementPolicy = replacementPolicy;
 		diskManager = new DiskMgr();
 		lirs = new LIRS();
@@ -102,7 +129,8 @@ public class BufMgr {
 			Page p = new Page();
 			Minibase.DiskManager.read_page(pageno, p);
 			bufPool[frameNum] = p.getData();
-			hashTable.put(pageno, frameNum);
+			PageId newpid = new PageId(pageno.pid);
+			hashTable.put(newpid, frameNum);
 			bufDescr[frameNum] = new Descriptor();
 			bufDescr[frameNum].pin_count++;
 			bufDescr[frameNum].pageno = pageno;
