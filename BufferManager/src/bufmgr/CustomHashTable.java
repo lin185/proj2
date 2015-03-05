@@ -29,8 +29,8 @@ public class CustomHashTable {
 		
 		int targetIndex = 0;
 		//System.out.println(target.pid);
-		if(bucketList.isEmpty())
-			return -1;
+	//	if(bucketList.isEmpty())
+	//		return -1;
 
 		for(targetIndex = 0; targetIndex < bucketList.size(); targetIndex++) {
 			System.out.printf("getTupleIndex, target.pid: %d  bucketElement.pid:%d\n",  target.pid, bucketList.get(targetIndex).getPageId().pid);
@@ -41,7 +41,15 @@ public class CustomHashTable {
 		}
 		return -1;
 	}
-	
+	public void printAll(){
+		for(int i = 0; i < HTSIZE; i++){
+			System.out.print("HashCode: " + i);
+			for(int j = 0; j < ht.get(i).size(); j++){
+				System.out.print(" (" + ht.get(i).get(j).getPageId() + ","+ ht.get(i).get(j).getFrameId() + ")" );
+			}
+			System.out.println();
+		}
+	}
 	
 	/* get the target Tuple
 	** Return NULL if tuple not found
@@ -73,7 +81,8 @@ public class CustomHashTable {
 	//	}else{
 			//add it to the end of the existing array
 			System.out.printf("Tuple <pid:%d, fid:%d> put into hashtable %d\n", pageId.pid, frameId, hash(pageId));
-		        ht.get(hash(pageId)).add(new Tuple(pageId, frameId));
+		      PageId p = new PageId(pageId.pid);  
+			  ht.get(hash(pageId)).add(new Tuple(p, frameId));
 	//	}
 	}
 	
@@ -83,9 +92,16 @@ public class CustomHashTable {
 		if(pageId == null)
 			return;
 		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
+		System.out.println(bucketList);
+		/*for(int i =0; i < bucketList.size(); i++){
+			System.out.printf("(%d, %d) ", bucketList.get(i).getPageId(), bucketList.get(i).getFrameId());
+		}*/
+		System.out.printf("HashCode %d PageId %d\n", hash(pageId), pageId.pid);
 		int index = getTupleIndex(pageId, bucketList);
+		System.out.println("index: " + index);
 		if (index == -1)
 			throw new HashEntryNotFoundException(null, "HASHENTRYNOTFOUND");
+		//	return;
 		Tuple t = bucketList.get(index);
 		System.out.printf("Tuple <pid:%d, fid:%d> removed from hashtable %d\n", pageId.pid, t.getFrameId(), hash(pageId));
 		

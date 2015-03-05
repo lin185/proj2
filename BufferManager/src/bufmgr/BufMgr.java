@@ -72,6 +72,7 @@ public class BufMgr {
 						InvalidPageNumberException, FileIOException, IOException{
 		
 		System.out.printf("pinPage: %d\n", pageno.pid);
+		//hashTable.printAll();
 		Tuple t = hashTable.get(pageno);
 		//System.out.print(t.getFrameId());
 		//If page is already in the buffer
@@ -91,21 +92,32 @@ public class BufMgr {
 
 			//if old frame is dirty -> write out the old page
 			if(bufDescr[frameNum].dirtybit == true){
-				System.out.printf("Frame %d is dirty\n", frameNum);
+				System.out.printf("Frame %d is dirty\n, my pid is %s\n", frameNum, bufDescr[frameNum].pageno.pid);
 				PageId pid = new PageId(bufDescr[frameNum].pageno.pid);
 				Page p = new Page(bufPool[frameNum]);
 				Minibase.DiskManager.write_page(pid, p);
+				
 			}
-			hashTable.remove(bufDescr[frameNum].pageno);
+			
+		//	hashTable.printAll();
 		
+		//	PageId rp = new PageId(bufDescr[frameNum].pageno.pid);
+			if(bufDescr[frameNum].pageno != null)
+				System.out.println(bufDescr[frameNum].pageno.pid);	
+			hashTable.remove(bufDescr[frameNum].pageno);
+		 // hashTable.printAll();  
 			//Read the new page 
 			Page p = new Page();
 			Minibase.DiskManager.read_page(pageno, p);
 			bufPool[frameNum] = p.getData();
-			hashTable.put(pageno, frameNum);
+			
+			PageId pl = new PageId(pageno.pid);
+			hashTable.put(pl, frameNum);
 			bufDescr[frameNum] = new Descriptor();
 			bufDescr[frameNum].pin_count++;
-			bufDescr[frameNum].pageno = pageno;
+			bufDescr[frameNum].pageno = pl;
+			
+		//	hashTable.printAll();
 		}
 		
 		
@@ -131,10 +143,9 @@ public class BufMgr {
 
 	public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException {
 		//System.out.printf("unpinPage\n");
-		System.out.printf("unpinPage: %d\n", pageno.pid);
 		if(pageno == null)
 			return;
-
+//	hashTable.printAll();
 		int frameId = hashTable.get(pageno).getFrameId();
 		Descriptor d = bufDescr[frameId];
 		if(d.pin_count == 0) {
