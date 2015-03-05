@@ -70,10 +70,12 @@ public class BufMgr {
 	public void pinPage(PageId pageno, Page page, boolean emptyPage) throws  
 						PagePinnedException, HashEntryNotFoundException, 
 						InvalidPageNumberException, FileIOException, IOException{
-		Tuple t;
+							System.out.printf("pinPage: %d\n", pageno.pid);
+		Tuple t = hashTable.get(pageno);
+		//System.out.print(t.getFrameId());
 		//If page is already in the buffer
-		System.out.println("HI");
-		if((t = hashTable.get(pageno))  != null){
+		if(t != null){
+			System.out.printf("Page: %d IN the buffer pool\n", pageno.pid);
 			//find the frame number and increment pin_count			
 			 bufDescr[t.getFrameId()].pin_count++;
 			 page = new Page(bufPool[t.getFrameId()]);
@@ -81,11 +83,13 @@ public class BufMgr {
 		}
 		//If page is not in the buffer
 		else {
+			System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
 			//choose a frame to replace.
-			int frameNum = 0;//lirs.getVictimPage();
+			int frameNum = pageno.pid;//lirs.getVictimPage();
 			
 			//if old frame is dirty -> write out the old page
 			if(bufDescr[frameNum].dirtybit == true){
+				System.out.printf("Frame %d is dirty\n", frameNum);
 				PageId pid = new PageId(bufDescr[frameNum].pageno.pid);
 				Page p = new Page(bufPool[frameNum]);
 				Minibase.DiskManager.write_page(pid, p);
@@ -124,18 +128,12 @@ public class BufMgr {
 	*/
 
 	public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException {
-		//System.out.printf("unpinPage\n");
-		//System.out.printf("PageId: %d\n", pageno.pid);
 		int frameId = hashTable.get(pageno).getFrameId();
-		//System.out.printf("frameId: %d\n",frameId);
 		Descriptor d = bufDescr[frameId];
 		if(d.pin_count == 0) {
-			//System.out.printf("BUFMGR:PAGE_NOT_PINNED.\n");
 			throw new PageUnpinnedException(null, "BUFMGR:PAGE_NOT_PINNED.");
 		}	
-		
 		if(dirty){
-			//System.out.printf("BUFMGR:DIRTY\n");
 			d.dirtybit = true;	    
 		}
 	    d.pin_count--;	
@@ -155,22 +153,27 @@ public class BufMgr {
 	* @return the first page id of the new pages.__ null, if error.
 	*/
 	public PageId newPage(Page firstpage, int howmany)  throws IOException, ChainException{
+		System.out.println("Start newPage()");
 		PageId pid = new PageId();
 	
 		//Allocate new pages
 		try {
 			Minibase.DiskManager.allocate_page(pid, howmany);
 		}catch(Exception e) {
+			System.out.println("End newPage() --- allocate error");
 			return null;
 		}
 	
 		//Allocate sucessfully, pin it
 		try {
 			pinPage(pid, firstpage, true);
+			System.out.println("End newPage() -- allocate succeed");
 			return pid;
 		}catch(Exception e) {
 			//pinpage error, deallocate page
 			Minibase.DiskManager.deallocate_page(pid, howmany);
+			System.out.println("End newPage() -- pinpage error");
+			
 			return null;
 		}
 

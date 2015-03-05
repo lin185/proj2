@@ -25,15 +25,19 @@ public class CustomHashTable {
 		//System.out.println(target.pid);
 		if(bucketList.isEmpty())
 			return -1;
-		for(Tuple t: bucketList){
+		/*for(Tuple t: bucketList){
 			//System.out.println("t.getPageID: " + t.getPageId());
-			if(t.getPageId() == target){
+			if(t.getPageId().pid == target.pid){
 				break;			
 			}		
 			targetIndex++;
+		}*/
+		for(; targetIndex < bucketList.size(); targetIndex++) {
+			if(bucketList.get(targetIndex).getPageId().pid == target.pid)
+				return targetIndex;
 		}
-		
-		return targetIndex > bucketList.size() ? -1 : targetIndex;
+		return -1;
+		//return targetIndex > bucketList.size() ? -1 : targetIndex;
 	}
 	/* get the target Tuple
 	** Return NULL if tuple not found
@@ -44,7 +48,13 @@ public class CustomHashTable {
 			return null;
 		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
 		int index = getTupleIndex(pageId, bucketList);
-		return  index == -1 ? null : bucketList.get(index);
+		if(index == -1) {
+			return null;
+		} else {
+			Tuple t = bucketList.get(index);
+			return t;
+		}
+		//return  index == -1 ? null : bucketList.get(index);
 	}
 	/* put new tuple into the correct bucket */
 	public void put (PageId pageId, Integer frameId){
