@@ -14,7 +14,13 @@ public class LIRS {
 		return 0;
 	}
 	//Determin which page should be replaced
-	public int getVictimPage(){
+	public int getVictimPage(Descriptor[] d){
+		int index = 0;
+		for(; index < d.length; index++){
+			if(d[index].pin_count == 0)
+				return index;
+		}
+		return -1;
 		//loop through the descriptor to find which has the max RD-R weight
 		//if p.Rvalue > p.RDvalue
 		//weight = p.Rvalue
@@ -32,7 +38,6 @@ public class LIRS {
 	//    p.rdvalue = currentAccessId - previousAccessId
 	//    prviousAccessID = currentAcessId;
 		//return victimPageID
-		return 0;
 	}
 	public static void setRD(PageId p){
 	

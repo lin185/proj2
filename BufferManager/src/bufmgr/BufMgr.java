@@ -19,7 +19,7 @@ public class BufMgr {
 	Descriptor[] bufDescr;	//buffer descriptors for frames
 	LIRS lirs;
 	
-	
+	int frameCount = 0;	
 	CustomHashTable hashTable;
 	
 	String replacementPolicy;
@@ -70,7 +70,8 @@ public class BufMgr {
 	public void pinPage(PageId pageno, Page page, boolean emptyPage) throws  
 						PagePinnedException, HashEntryNotFoundException, 
 						InvalidPageNumberException, FileIOException, IOException{
-							System.out.printf("pinPage: %d\n", pageno.pid);
+		
+		System.out.printf("pinPage: %d\n", pageno.pid);
 		Tuple t = hashTable.get(pageno);
 		//System.out.print(t.getFrameId());
 		//If page is already in the buffer
@@ -85,8 +86,9 @@ public class BufMgr {
 		else {
 			System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
 			//choose a frame to replace.
-			int frameNum = pageno.pid;//lirs.getVictimPage();
-			
+			//int frameNum = frameCount++ % numbufs;
+			int frameNum = lirs.getVictimPage(bufDescr); 
+
 			//if old frame is dirty -> write out the old page
 			if(bufDescr[frameNum].dirtybit == true){
 				System.out.printf("Frame %d is dirty\n", frameNum);
@@ -128,12 +130,18 @@ public class BufMgr {
 	*/
 
 	public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException {
+		//System.out.printf("unpinPage\n");
+		System.out.printf("unpinPage: %d\n", pageno.pid);
+		if(pageno == null)
+			return;
+
 		int frameId = hashTable.get(pageno).getFrameId();
 		Descriptor d = bufDescr[frameId];
 		if(d.pin_count == 0) {
 			throw new PageUnpinnedException(null, "BUFMGR:PAGE_NOT_PINNED.");
 		}	
 		if(dirty){
+			System.out.printf("set dirtybit to 1\n\n");
 			d.dirtybit = true;	    
 		}
 	    d.pin_count--;	
