@@ -24,6 +24,8 @@ public class BufMgr {
 	
 	String replacementPolicy;
 	DiskMgr diskManager;
+
+	int access_count;
 	
 	/**
 	* Create the BufMgr object.
@@ -43,6 +45,7 @@ public class BufMgr {
 		}
 		hashTable = new CustomHashTable();
 		
+		access_count = 0;
 		
 		//test hash table
 		/*hashTable.printHashTable();
@@ -103,20 +106,23 @@ public class BufMgr {
 		Tuple t = hashTable.get(pageno);
 		//System.out.print(t.getFrameId());
 		//If page is already in the buffer
+		int frameNum;
 		if(t != null){
 			System.out.printf("Page: %d IN the buffer pool\n", pageno.pid);
-			//find the frame number and increment pin_count			
-			 bufDescr[t.getFrameId()].pin_count++;
+			//find the frame number and increment pin_count	
+			frameNum = t.getFrameId();
+			 bufDescr[frameNum].pin_count++;
 			 page = new Page(bufPool[t.getFrameId()]);
 			 System.out.printf("pinPage: %d end\n", pageno.pid);
-			 return;
+
 		}
 		//If page is not in the buffer
 		else {
 			System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
 			//choose a frame to replace.
 			//int frameNum = frameCount++ % numbufs;
-			int frameNum = lirs.getVictimPage(bufDescr); 
+			frameNum = lirs.getVictimPage(bufDescr); 
+			System.out.printf("Victim frame ID: %d\n", frameNum);
 
 			//if(frameNum == -1)//error	
 				
@@ -149,8 +155,26 @@ public class BufMgr {
 			
 		//	hashTable.printAll();
 		}
-		
-		
+	
+		//update RD
+		if(bufDescr[frameNum].t1 == -1) {
+			bufDescr[frameNum].t1 = bufDescr[frameNum].t2;
+			access_count++;
+			bufDescr[frameNum].t2 = access_count;
+		} else {
+			bufDescr[frameNum].t1 = bufDescr[frameNum].t2;
+			access_count++;
+			bufDescr[frameNum].t2 = access_count;
+			bufDescr[frameNum].RD = bufDescr[frameNum].t2 - bufDescr[frameNum].t1;		
+		}
+		//update R
+		bufDescr[frameNum].R = -1;
+		int i;		
+		for(i=0; i<numbufs; i++) {
+			bufDescr[i].R++;
+		}
+
+		return;		
 	}
 	
 	

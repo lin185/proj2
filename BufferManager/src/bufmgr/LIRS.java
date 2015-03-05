@@ -2,25 +2,44 @@ package bufmgr;
 
 import global.PageId;
 
-
+//The Low Inter-refernce Recency Set(LIRS) Replacement policy
 public class LIRS {
 	
 	public LIRS(){}
 	
+	//THe Reuse Distance of a page
 	private int calcRD(PageId p){
 		return 0;
 	}
+
+	//The Recency of the last use of a page
 	private int calcR(PageId p){
 		return 0;
 	}
-	//Determin which page should be replaced
+
+	//Determine which page should be replaced
 	public int getVictimPage(Descriptor[] d){
 		int index = 0;
+		int max_weight = -1;
+		int max_weight_index = -1;
 		for(; index < d.length; index++){
-			if(d[index].pin_count == 0)
-				return index;
+			if(d[index].pin_count == 0) {
+
+				if(d[index].RD > d[index].R) {
+					if(d[index].RD > max_weight) {
+						max_weight = d[index].RD;  
+						max_weight_index = index;
+					}
+				} else {
+					if(d[index].R > max_weight) {
+						max_weight = d[index].R;  
+						max_weight_index = index;
+					}
+				}
+
+			}
 		}
-		return -1;
+		return max_weight_index;
 		//loop through the descriptor to find which has the max RD-R weight
 		//if p.Rvalue > p.RDvalue
 		//weight = p.Rvalue
@@ -39,9 +58,11 @@ public class LIRS {
 	//    prviousAccessID = currentAcessId;
 		//return victimPageID
 	}
+
 	public static void setRD(PageId p){
 	
 	}
+
 	public static void setR(PageId p){
 	
 	}
