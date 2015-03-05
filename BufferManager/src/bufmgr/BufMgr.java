@@ -40,9 +40,9 @@ public class BufMgr {
 			bufDescr[i] = new Descriptor();
 		}
 		hashTable = new CustomHashTable();
-		
 		this.replacementPolicy = replacementPolicy;
 		diskManager = new DiskMgr();
+
 	}
 	
 	
