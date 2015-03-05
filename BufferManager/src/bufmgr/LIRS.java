@@ -1,7 +1,10 @@
+package bufmgr;
+
+import global.PageId;
 
 
 public class LIRS {
-
+	
 	public LIRS(){}
 	
 	private int calcRD(PageId p){
@@ -11,7 +14,7 @@ public class LIRS {
 		return 0;
 	}
 	//Determin which page should be replaced
-	public static int victimPage(Descriptor d){
+	public int getVictimPage(){
 		//loop through the descriptor to find which has the max RD-R weight
 		//if p.Rvalue > p.RDvalue
 		//weight = p.Rvalue
@@ -29,11 +32,14 @@ public class LIRS {
 	//    p.rdvalue = currentAccessId - previousAccessId
 	//    prviousAccessID = currentAcessId;
 		//return victimPageID
+		return 0;
 	}
-	public static void setRD(PageID p){
+	public static void setRD(PageId p){
 	
 	}
-	public static void setR(PageID p){
+	public static void setR(PageId p){
 	
 	}
+	
 }
+

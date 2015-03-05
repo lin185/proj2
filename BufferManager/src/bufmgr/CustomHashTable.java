@@ -3,6 +3,7 @@ package bufmgr;
 import global.*;
 import java.util.ArrayList;
 
+import diskmgr.*;
 
 public class CustomHashTable {
 	private ArrayList<ArrayList<Tuple>> ht;
@@ -19,13 +20,13 @@ public class CustomHashTable {
 	/* get index number for where target tuple is stored
 	** Return -1 if tuple not found
 	*/
-	public int  getTupleIndex(PageId target, ArrayList<Tuple> bucketList){
+	public int getTupleIndex(PageId target, ArrayList<Tuple> bucketList){
 		int targetIndex = 0;
-		System.out.println(target.pid);
+		//System.out.println(target.pid);
 		if(bucketList.isEmpty())
 			return -1;
 		for(Tuple t: bucketList){
-			System.out.println("t.getPageID: " + t.getPageId());
+			//System.out.println("t.getPageID: " + t.getPageId());
 			if(t.getPageId() == target){
 				break;			
 			}		
@@ -38,16 +39,11 @@ public class CustomHashTable {
 	** Return NULL if tuple not found
 	*/
 	public Tuple get (PageId pageId){
-<<<<<<< HEAD
 		//Find the right bucketList	
-			
-=======
-		//Find the right bucketList
-		System.out.println(hash(pageId));
->>>>>>> cf7406e4e2ecc6e6121776da1aad88a44bcea95d
+		if(pageId == null)
+			return null;
 		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
 		int index = getTupleIndex(pageId, bucketList);
-		System.out.println("INDEX: " + index);
 		return  index == -1 ? null : bucketList.get(index);
 	}
 	/* put new tuple into the correct bucket */
@@ -63,11 +59,15 @@ public class CustomHashTable {
 	//	}
 	}
 	/* remove the target tuple from the bucketList */
-	public Tuple remove(PageId pageId){
+	public void remove(PageId pageId) throws HashEntryNotFoundException{
 		//Find the right bucketList		
+		if(pageId == null)
+			return;
 		ArrayList<Tuple> bucketList = ht.get(hash(pageId));
-
-		return bucketList.remove(getTupleIndex(pageId, bucketList));
+		int index = getTupleIndex(pageId, bucketList);
+		if (index == -1)
+			throw new HashEntryNotFoundException(null, "HASHENTRYNOTFOUND");
+		bucketList.remove(index);
 	}
 	/* Calculate the index number for hashTable directory */
 	public Integer hash(PageId pageNum){
