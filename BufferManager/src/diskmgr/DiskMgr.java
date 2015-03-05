@@ -322,7 +322,6 @@ public class DiskMgr implements GlobalConst {
 		//System.out.println("num_map_pages: " + i + "\n");
       pgid.pid = 1 + i;
       // Pin the space-map page.
-      
       Page apage = new Page();
       pinPage(pgid, apage, false /*read disk*/);
       
