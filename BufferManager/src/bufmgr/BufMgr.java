@@ -8,7 +8,7 @@ import global.PageId;
 import global.Page;
 import global.Minibase;
 import diskmgr.*;
-
+import java.util.*;
 import java.io.IOException;
 import chainexception.ChainException;
 
@@ -220,7 +220,7 @@ public class BufMgr {
 	    d.pin_count--;	
 	    
 	   	System.out.printf("unpinPage %d end\n", pageno.pid);
-	   	hashTable.printHashTable();
+	   	//hashTable.printHashTable();
 	}
 		
 	/**
@@ -256,12 +256,12 @@ public class BufMgr {
 		try {
 			pinPage(pid, firstpage, true);
 			System.out.println("End newPage() -- allocate succeed\n\n\n");
+			printBufPool();
 			return pid;
 		}catch(Exception e) {
 			//pinpage error, deallocate page
 			Minibase.DiskManager.deallocate_page(pid, howmany);
 			System.out.println("End newPage() -- pinpage error\n\n\n");
-			
 			return null;
 		}
 
@@ -310,13 +310,15 @@ public void flushAllPages() {}
 		return ct;
 	}
 	
-	/*public int printBufPool(){
+	public void printBufPool(){
 		for(int i=0; i<bufDescr.length; i++) {
-			if()
-		
+			if(!(bufDescr[i].t1 == -1 && bufDescr[i].t2 == -1)) {
+				System.out.printf("bufPool[%d]:\n", i);
+				System.out.println(Arrays.toString(bufPool[i]));
+			}
 		}
 	
-	}*/
+	}
 	
 	
 
