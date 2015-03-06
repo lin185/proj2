@@ -102,30 +102,27 @@ public class BufMgr {
 						InvalidPageNumberException, FileIOException, IOException{
 		
 		System.out.printf("pinPage: %d start\n", pageno.pid);
-		//hashTable.printAll();
+
+
 		Tuple t = hashTable.get(pageno);
-		//System.out.print(t.getFrameId());
-		//If page is already in the buffer
 		int frameNum;
+		//If page is already in the buffer
 		if(t != null){
 			System.out.printf("Page: %d IN the buffer pool\n", pageno.pid);
 			//find the frame number and increment pin_count	
 			frameNum = t.getFrameId();
-			 bufDescr[frameNum].pin_count++;
-			 page = new Page(bufPool[t.getFrameId()]);
-			 System.out.printf("pinPage: %d end\n", pageno.pid);
-
+			bufDescr[frameNum].pin_count++;
+			page = new Page(bufPool[frameNum]);
 		}
 		//If page is not in the buffer
 		else {
 			System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
 			//choose a frame to replace.
-			//int frameNum = frameCount++ % numbufs;
 			frameNum = lirs.getVictimPage(bufDescr); 
 			System.out.printf("Victim frame ID: %d\n", frameNum);
 
 			//if(frameNum == -1)//error	
-				
+
 			//if old frame is dirty -> write out the old page
 			if(bufDescr[frameNum].dirtybit == true){
 				//System.out.printf("Frame %d is dirty\n, my pid is %s\n", frameNum, bufDescr[frameNum].pageno.pid);
@@ -150,8 +147,7 @@ public class BufMgr {
 			bufDescr[frameNum] = new Descriptor();
 			bufDescr[frameNum].pin_count++;
 			bufDescr[frameNum].pageno = newpid;
-			
-			 System.out.printf("pinPage: %d end\n", pageno.pid);
+		
 			
 		//	hashTable.printAll();
 		}
@@ -173,7 +169,8 @@ public class BufMgr {
 		for(i=0; i<numbufs; i++) {
 			bufDescr[i].R++;
 		}
-
+		//printDescriptor(bufDescr[frameNum]);
+		System.out.printf("pinPage: %d end\n", pageno.pid);
 		return;		
 	}
 	
@@ -203,11 +200,11 @@ public class BufMgr {
 		int frameId = hashTable.get(pageno).getFrameId();
 		Descriptor d = bufDescr[frameId];
 		if(d.pin_count == 0) {
-			System.out.printf("pin_count == 0 error\nunpinPage %d end\n", pageno.pid);
+			System.out.printf("pin_count == 0 error\nunpinPage %d end\n\n", pageno.pid);
 			throw new PageUnpinnedException(null, "BUFMGR:PAGE_NOT_PINNED.");
 		}	
 		if(dirty){
-			System.out.printf("page is dirty\nunpinPage %d end\n", pageno.pid);
+			System.out.printf("page is dirty\nunpinPage %d end\n\n", pageno.pid);
 			d.dirtybit = true;	    
 		}
 	    d.pin_count--;	
@@ -235,19 +232,19 @@ public class BufMgr {
 			Minibase.DiskManager.allocate_page(pid, howmany);
 			System.out.println("allocated page id: " + pid.pid);
 		}catch(Exception e) {
-			System.out.println("End newPage() --- allocate error");
+			System.out.println("End newPage() --- allocate error\n\n\n");
 			return null;
 		}
 	
 		//Allocate sucessfully, pin it
 		try {
 			pinPage(pid, firstpage, true);
-			System.out.println("End newPage() -- allocate succeed");
+			System.out.println("End newPage() -- allocate succeed\n\n\n");
 			return pid;
 		}catch(Exception e) {
 			//pinpage error, deallocate page
 			Minibase.DiskManager.deallocate_page(pid, howmany);
-			System.out.println("End newPage() -- pinpage error");
+			System.out.println("End newPage() -- pinpage error\n\n\n");
 			
 			return null;
 		}
@@ -297,4 +294,18 @@ public void flushAllPages() {}
 		return ct;
 	}
 	
+	
+	public void printDescriptor(Descriptor d) {
+		System.out.printf("____Descriptor____\n");
+		System.out.printf("|pageid:%d       |\n", d.pageno.pid);
+		System.out.printf("|pin_count:%d    |\n", d.pin_count);
+		System.out.printf("|t1:%d           |\n", d.t1);
+		System.out.printf("|t2:%d           |\n", d.t2);
+		System.out.printf("|RD:%d           |\n", d.RD);
+		System.out.printf("|R:%d            |\n", d.R);
+		System.out.printf("__________________\n");
+	}
+	
 }
+
+
