@@ -81,7 +81,6 @@ public class BufMgr {
 
 		//System.out.printf("pinPage: %d start\n", pageno.pid);
 
-
 		Tuple t = hashTable.get(pageno);
 		int frameNum;
 		//If page is already in the buffer
@@ -97,13 +96,13 @@ public class BufMgr {
 		//If page is not in the buffer
 		else {
 
-//			System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
+			//System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
 			//choose a frame to replace.
 			frameNum = lirs.getVictimPage(bufDescr, access_count); 
-//			System.out.printf("Victim frame ID: %d\n", frameNum);
+			//System.out.printf("Victim frame ID: %d\n", frameNum);
 			
 			if(frameNum == -1){
-				throw new BufferPoolExceededException(null, "BufMgr: Exceeded error");
+				throw new BufferPoolExceededException(null, "BUFMGR: BufferPoolExceededException");
 			}
 
 			
@@ -158,20 +157,26 @@ public class BufMgr {
 	* @param dirty the dirty bit of the frame
 	*/
 
-	public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException {
+	public void unpinPage(PageId pageno, boolean dirty) throws PageUnpinnedException, HashEntryNotFoundException {
 
 		if(pageno == null)
-			return;
-	
+			throw new HashEntryNotFoundException(null, "BUFMGR: HashEntryNotFoundException");
 
-//		System.out.printf("unpinPage %d start\n", pageno.pid);
-//	hashTable.printAll();
-		int frameId = hashTable.get(pageno).getFrameId();
+		//System.out.printf("unpinPage %d start\n", pageno.pid);
+		Tuple t = hashTable.get(pageno);
+		if (t == null)
+			throw new HashEntryNotFoundException(null, "BUFMGR: HashEntryNotFoundException");
+			
+		int frameId = t.getFrameId();
 		Descriptor d = bufDescr[frameId];
+		
+		//page not pinned
 		if(d.pin_count == 0) {
-//			System.out.printf("pin_count == 0 error\nunpinPage %d end\n\n", pageno.pid);
+			//System.out.printf("pin_count == 0 error\nunpinPage %d end\n\n", pageno.pid);
 			throw new PageUnpinnedException(null, "BUFMGR:PAGE_NOT_PINNED.");
-		}	
+		}
+		
+		//page pinned, but dirty
 		if(dirty){
 //			System.out.printf("page is dirty\n");
 			d.dirtybit = true;	    
@@ -181,8 +186,6 @@ public class BufMgr {
 	    d.pin_count--;	
 	    
 //	   	System.out.printf("unpinPage %d end\n", pageno.pid);
-
-
 	}
 		
 		
@@ -237,14 +240,43 @@ public class BufMgr {
 	}
 	
 	
-/**
-* This method should be called to delete a page that is on disk.
-* This routine must call the method in diskmgr package to
-* deallocate the page.
-*
-* @param globalPageId the page number in the data base.
-*/
-public void freePage(PageId globalPageId) throws ChainException{}
+	/**
+	* This method should be called to delete a page that is on disk.
+	* This routine must call the method in diskmgr package to
+	* deallocate the page.
+	*
+	* @param globalPageId the page number in the data base.
+	*/
+	public void freePage(PageId globalPageId) throws PagePinnedException{
+		//page not in the buffer pool
+		Tuple t = hashTable.get(globalPageId);
+		if(t == null) {
+			try{
+				Minibase.DiskManager.deallocate_page(globalPageId);
+				return;
+			} catch(Exception e) {
+				return;
+			}
+		}
+		
+		//page in the buffer pool, but pinned
+		int frameNum = t.getFrameId();
+		if(bufDescr[frameNum].pin_count > 0) {
+			throw new PagePinnedException(null, "BUFMGR: PagePinnedException.");
+		}
+		
+		//page not pinned
+		try{
+			hashTable.remove(bufDescr[frameNum].pageno);
+			bufDescr[frameNum] = new Descriptor();
+			Minibase.DiskManager.deallocate_page(globalPageId);
+		} catch(Exception e) {
+			return;
+		}
+	}
+	
+	
+	
 /**
 * Used to flush a particular page of the buffer pool to disk.
 * This method calls the write_page method of the diskmgr package.
