@@ -16,16 +16,15 @@ public class BufMgr {
 
 	int numbufs;		//number of buffers in the buffer pool
 	byte[][] bufPool; 	//array of bytes to represent buffer pool
+	LIRS lirs;			//Replacement policy object
 	Descriptor[] bufDescr;	//buffer descriptors for frames
-	LIRS lirs;
-	
-	int frameCount = 0;	
-	CustomHashTable hashTable;
+
+	int access_count;	//global access count for RD-R calculation
 	
 	String replacementPolicy;
-	DiskMgr diskManager;
-
-	int access_count;
+	CustomHashTable hashTable;
+	
+	
 	
 	/**
 	* Create the BufMgr object.
@@ -38,44 +37,21 @@ public class BufMgr {
 	*/
 	public BufMgr(int numbufs, int lookAheadSize, String replacementPolicy) {
 		this.numbufs = numbufs;
+		//Init buffer pool with each page size of GlobalConst.PAGE_SIZE
 		bufPool = new byte[numbufs][global.GlobalConst.PAGE_SIZE];
+		//Init buffer descriptors of each frame 
 		bufDescr = new Descriptor[numbufs];
 		for(int i = 0; i<numbufs; i++) {
 			bufDescr[i] = new Descriptor();
 		}
+		//Init hash table
 		hashTable = new CustomHashTable();
-		
+		//Init global access count
 		access_count = 0;
-		
-		//test hash table
-		/*hashTable.printHashTable();
-		PageId pid = new PageId(0); //<0,0>
-		hashTable.put(pid, 0);
-		hashTable.printHashTable();
-		
-		pid = new PageId(0);
-		try{
-			hashTable.remove(pid);
-		}catch(Exception e) {
-			System.out.println("remove error");
-		}
-		hashTable.printHashTable();
-		
-		pid = new PageId(1); //<1,0>
-		hashTable.put(pid, 0);
-		hashTable.printHashTable();
-		
-		pid = new PageId(0); //<0,1>
-		hashTable.put(pid, 1);
-		hashTable.printHashTable();*/
-		
-		
-		
-		
-		this.replacementPolicy = replacementPolicy;
-		diskManager = new DiskMgr();
+		//Init replacement policy object
 		lirs = new LIRS();
 
+		this.replacementPolicy = replacementPolicy;
 	}
 	
 	
@@ -102,22 +78,25 @@ public class BufMgr {
 						InvalidPageNumberException, FileIOException, IOException,
 						BufferPoolExceededException{
 		
-//		System.out.printf("pinPage: %d start\n", pageno.pid);
+
+		//System.out.printf("pinPage: %d start\n", pageno.pid);
 
 
 		Tuple t = hashTable.get(pageno);
 		int frameNum;
 		//If page is already in the buffer
 		if(t != null){
-//			System.out.printf("Page: %d IN the buffer pool\n", pageno.pid);
+
+			//System.out.printf("Page: %d IN the buffer pool\n", pageno.pid);
+
 			//find the frame number and increment pin_count	
 			frameNum = t.getFrameId();
 			bufDescr[frameNum].pin_count++;
-			//page = new Page(bufPool[frameNum]);
 			page.setpage(bufPool[frameNum]);
 		}
 		//If page is not in the buffer
 		else {
+
 //			System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
 			//choose a frame to replace.
 			frameNum = lirs.getVictimPage(bufDescr, access_count); 
@@ -127,6 +106,8 @@ public class BufMgr {
 				throw new BufferPoolExceededException(null, "BufMgr: Exceeded error");
 			}
 
+			
+
 			//if old frame is dirty -> write out the old page
 			if(bufDescr[frameNum].dirtybit == true){
 				//System.out.printf("Frame %d is dirty\n, my pid is %s\n", frameNum, bufDescr[frameNum].pageno.pid);
@@ -134,14 +115,9 @@ public class BufMgr {
 				Page p = new Page(bufPool[frameNum]);
 				Minibase.DiskManager.write_page(pid, p);
 			}
-			
-		//	hashTable.printAll();
 		
-		//	PageId rp = new PageId(bufDescr[frameNum].pageno.pid);
-			//if(bufDescr[frameNum].pageno != null)
-			//	System.out.println(bufDescr[frameNum].pageno.pid);	
 			hashTable.remove(bufDescr[frameNum].pageno);
-		 // hashTable.printAll();  
+
 			//Read the new page 
 			Page p = new Page();
 			Minibase.DiskManager.read_page(pageno, p);
@@ -151,35 +127,16 @@ public class BufMgr {
 			bufDescr[frameNum] = new Descriptor();
 			bufDescr[frameNum].pin_count++;
 			bufDescr[frameNum].pageno = newpid;
-			
 			page.setpage(bufPool[frameNum]);
-			
-		//	hashTable.printAll();
 		}
 	
 		access_count++;
 		bufDescr[frameNum].t1 = bufDescr[frameNum].t2;
 		bufDescr[frameNum].t2 = access_count;
-		/*
-		//update RD
-		if(bufDescr[frameNum].t1 == -1) {
-			bufDescr[frameNum].t1 = bufDescr[frameNum].t2;
-			access_count++;
-			bufDescr[frameNum].t2 = access_count;
-		} else {
-			bufDescr[frameNum].t1 = bufDescr[frameNum].t2;
-			access_count++;
-			bufDescr[frameNum].t2 = access_count;
-			bufDescr[frameNum].RD = bufDescr[frameNum].t2 - bufDescr[frameNum].t1;		
-		}
-		//update R
-		bufDescr[frameNum].R = -1;
-		int i;		
-		for(i=0; i<numbufs; i++) {
-			bufDescr[i].R++;
-		}*/
-		//printDescriptor(bufDescr[frameNum]);
-//		System.out.printf("pinPage: %d end\n", pageno.pid);
+
+
+		//System.out.printf("pinPage: %d end\n", pageno.pid);
+
 		return;		
 	}
 	
@@ -206,6 +163,7 @@ public class BufMgr {
 		if(pageno == null)
 			return;
 	
+
 //		System.out.printf("unpinPage %d start\n", pageno.pid);
 //	hashTable.printAll();
 		int frameId = hashTable.get(pageno).getFrameId();
@@ -223,8 +181,11 @@ public class BufMgr {
 	    d.pin_count--;	
 	    
 //	   	System.out.printf("unpinPage %d end\n", pageno.pid);
-	   	//hashTable.printHashTable();
+
+
 	}
+		
+		
 		
 	/**
 	* Allocate new pages.* Call DB object to allocate a run of new pages and
@@ -240,31 +201,36 @@ public class BufMgr {
 	* @return the first page id of the new pages.__ null, if error.
 	*/
 	public PageId newPage(Page firstpage, int howmany)  throws IOException, ChainException{
-//		System.out.println("Start newPage()");
-//		hashTable.printHashTable();
-		
+
+		//System.out.println("Start newPage()");
+		//hashTable.printHashTable();
+
 		
 		PageId pid = new PageId();
 		
 		//Allocate new pages
 		try {
 			Minibase.DiskManager.allocate_page(pid, howmany);
-//			System.out.println("allocated page id: " + pid.pid);
+
+			//System.out.println("allocated page id: " + pid.pid);
+
 		}catch(Exception e) {
-			System.out.println("End newPage() --- allocate error\n\n\n");
+			//System.out.println("End newPage() --- allocate error\n\n\n");
 			return null;
 		}
 	
 		//Allocate sucessfully, pin it
 		try {
 			pinPage(pid, firstpage, true);
-//			System.out.println("End newPage() -- allocate succeed\n\n\n");
-		//	printBufPool();
+
+			//System.out.println("End newPage() -- allocate succeed\n\n\n");
+			//printBufPool();
+
 			return pid;
 		}catch(Exception e) {
 			//pinpage error, deallocate page
 			Minibase.DiskManager.deallocate_page(pid, howmany);
-			System.out.println("End newPage() -- pinpage error\n\n\n");
+			//System.out.println("End newPage() -- pinpage error\n\n\n");
 			return null;
 		}
 
