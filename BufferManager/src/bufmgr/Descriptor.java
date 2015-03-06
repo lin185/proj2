@@ -11,19 +11,14 @@ public class Descriptor {
 	int t1;
 	int t2;
 	
-	int RD;
-	int R;
-
 	public Descriptor(){
 		pageno = null;
 		pin_count = 0;
 		dirtybit = false;
 
 		t1 = -1;
-		t2 = 0;
+		t2 = -1;
 
-		RD = Integer.MAX_VALUE;
-		R = 0;
 	}
 
 }

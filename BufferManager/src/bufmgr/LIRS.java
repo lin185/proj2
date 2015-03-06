@@ -18,25 +18,43 @@ public class LIRS {
 	}
 
 	//Determine which page should be replaced
-	public int getVictimPage(Descriptor[] d){
-		int index = 0;
+	public int getVictimPage(Descriptor[] d, int access_count){
+		//free buffer frame
+		for(int index = 0; index < d.length; index++){
+			if(d[index].t1 == -1 && d[index].t2 == -1) {
+				return index;
+			}
+		}
+		
+		
+		//No space in the buffer pool
+		//Find a victim page to replace
 		int max_weight = -1;
 		int max_weight_index = -1;
-		for(; index < d.length; index++){
+		int RD;
+		int R;
+		for(int index = 0; index < d.length; index++){
 			if(d[index].pin_count == 0) {
-
-				if(d[index].RD > d[index].R) {
-					if(d[index].RD > max_weight) {
-						max_weight = d[index].RD;  
+			
+				if(d[index].t1 == -1 && d[index].t2 != -1) 
+					RD = Integer.MAX_VALUE;
+				else
+					RD = d[index].t2 - d[index].t1;
+					
+				R = access_count - d[index].t2;
+				
+				if(RD > R) {
+					if(RD > max_weight) {
+						max_weight = RD;  
 						max_weight_index = index;
 					}
 				} else {
-					if(d[index].R > max_weight) {
-						max_weight = d[index].R;  
+					if(R > max_weight) {
+						max_weight = R;  
 						max_weight_index = index;
 					}
 				}
-
+				
 			}
 		}
 		return max_weight_index;
