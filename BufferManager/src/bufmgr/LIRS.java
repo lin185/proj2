@@ -18,7 +18,7 @@ public class LIRS {
 	}
 
 	//Determine which page should be replaced
-	public int getVictimPage(Descriptor[] d, int access_count){
+	public int getVictimPage(Descriptor[] d, int access_count) {
 		//free buffer frame
 		for(int index = 0; index < d.length; index++){
 			if(d[index].t1 == -1 && d[index].t2 == -1) {
@@ -35,7 +35,6 @@ public class LIRS {
 		int R;
 		for(int index = 0; index < d.length; index++){
 			if(d[index].pin_count == 0) {
-			
 				if(d[index].t1 == -1 && d[index].t2 != -1) 
 					RD = Integer.MAX_VALUE;
 				else
