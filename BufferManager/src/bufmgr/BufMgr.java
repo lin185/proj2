@@ -106,9 +106,6 @@ public class BufMgr {
 				throw new BufferPoolExceededException(null, "BUFMGR: BufferPoolExceededException");
 			}
 
-			
-
-
 			//if old frame is dirty -> write out the old page
 			if(bufDescr[frameNum].dirtybit == true){
 				//System.out.printf("Frame %d is dirty\n, my pid is %s\n", frameNum, bufDescr[frameNum].pageno.pid);
@@ -285,21 +282,40 @@ public class BufMgr {
 *
 * @param pageid the page number in the database.
 */
-public void flushPage(PageId pageid) {}
+public void flushPage(PageId pageid) throws HashEntryNotFoundException, InvalidPageNumberException, FileIOException, IOException, PagePinnedException {
+	Tuple t = hashTable.get(pageid);
+	if(t.getPageId() == null)
+		throw new HashEntryNotFoundException(null, "BUFMGR: HashEntryNotFoundException");
+	int frameNum = t.getFrameId();	
+	if(bufDescr[frameNum].pin_count > 0)
+		throw new PagePinnedException(null, "PagePinnedException");
+	if(bufDescr[frameNum].dirtybit == true){
+		PageId pid = new PageId(bufDescr[frameNum].pageno.pid);
+		Page p = new Page(bufPool[frameNum]);
+		Minibase.DiskManager.write_page(pid, p);
+		bufDescr[frameNum].dirtybit = false;
+	}
+	hashTable.remove(bufDescr[frameNum].pageno);	
+}
 /**
 * Used to flush all dirty pages in the buffer pool to disk
 *
 */
-public void flushAllPages() {}
-	
-	
+public void flushAllPages() throws HashEntryNotFoundException, InvalidPageNumberException, FileIOException, IOException, PagePinnedException{
+	for(int i = 0; i < bufDescr.length; i++){
+		if(bufDescr[i].dirtybit == true){
+			if(bufDescr[i].pin_count > 0)
+				throw new PagePinnedException(null, "PagePinnedException");
+			flushPage(bufDescr[i].pageno);
+		}
+	}
+}
 	/**
 	* Returns the total number of buffer frames.
 	*/
 	public int getNumBuffers() {
 		return numbufs;
 	}
-
 
 	/**
 	* Returns the total number of unpinned buffer frames.
