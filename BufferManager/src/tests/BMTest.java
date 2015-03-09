@@ -111,13 +111,16 @@ class BMDriver extends TestDriver implements GlobalConst {
 		//The following runs all the test functions 
 
 		//Running test1() to test6()
-		if (!test1()) { _passAll = FAIL; }    
-		/*if (!test2()) { _passAll = FAIL; }
+		if (!test1()) { _passAll = FAIL; }   
+				//System.out.println("_passALl: "+_passAll); 
+		if (!test2()) { _passAll = FAIL; }
+				//System.out.println("_passALl: "+_passAll);
 		if (!test3()) { _passAll = FAIL; }
+		//System.out.println("_passALl: "+_passAll);
 		if (!test4()) { _passAll = FAIL; }
 		if (!test5()) { _passAll = FAIL; }
 		if (!test6()) { _passAll = FAIL; }
-		*/
+		
 		return _passAll;
 	}
 
@@ -137,7 +140,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 		// written during this test.
 		boolean status = OK;
 		int numPages = Minibase.BufferManager.getNumUnpinned() + 1;
-		System.out.print("test1(): numPages = " + numPages + "\n");
+		//System.out.print("test1(): numPages = " + numPages + "\n");
 		Page pg = new Page(); 
 		PageId pid; 
 		PageId lastPid;
@@ -354,7 +357,7 @@ class BMDriver extends TestDriver implements GlobalConst {
 				if (status == FAIL) {
 					System.err.print("*** Pinning too many pages\n");
 					System.out.println ("  --> Failed as expected \n");
-				}
+				} 
 			}
 			catch (Exception e) {e.printStackTrace();}
 

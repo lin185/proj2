@@ -232,7 +232,7 @@ public class TestDriver implements GlobalConst{
     while (true) {
       
       String exception = e.getClass().getName();
-      
+      //System.out.printf("exception: %s   expected: %s\n", exception, expectedException);
       if (exception.equals(expectedException)) {
 	return (!notCaught);
       }
