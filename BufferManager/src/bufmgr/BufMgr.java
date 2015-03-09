@@ -115,8 +115,8 @@ public class BufMgr {
 		else {
 			System.out.printf("Page: %d NOT in the buffer pool\n", pageno.pid);
 			//choose a frame to replace.
-			//int frameNum = frameCount++ % numbufs;
-			int frameNum = lirs.getVictimPage(bufDescr); 
+			int frameNum = frameCount++ % numbufs;
+		//	int frameNum = lirs.getVictimPage(bufDescr); 
 
 			//if(frameNum == -1)//error	
 				
